@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const db = require('../models/exerciseModel');
+require('dotenv').config();
 
 
 
@@ -122,7 +123,7 @@ const workoutSeed = [
 ];
 
 async function connect() {
-  await mongoose.connect('mongodb://localhost:27017/workout');
+  await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/workout');
   db.deleteMany({})
   .then(() => db.insertMany(workoutSeed))
   .then((data) => {
