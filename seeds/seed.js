@@ -122,6 +122,8 @@ const workoutSeed = [
   },
 ];
 
+// waits for connection then deletes and adds seed data
+
 async function connect() {
   await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/workout');
   db.deleteMany({})
