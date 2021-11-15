@@ -2,24 +2,34 @@ const express = require("express");
 const router = express.Router();
 const db = require("../models/exerciseModel");
 
-router.get("/api/workouts", (req, res) => {
-  db.find({})
-    .then((db) => {
-      console.log(db);
-      // db.aggregate([
-      //   {$addFields: {
-      //       totalDuration: {$sum: "$exercises[0].duration"}
-      //   }}
-      // ]).exec((err, data)=> {
-      //     if (err) console.log(err);
-      //     console.log(data)
-      // });
-      res.json(db);
-    })
-    .catch((err) => {
-      res.json(err);
-    });
-});
+router
+  .get("/api/workouts", (req, res) => {
+    db.aggregate(
+      [
+        { $match: {} },
+        {
+          $addFields: {
+            totalDuration: {
+              $reduce: {
+                input: "$exercises",
+                initialValue: 0,
+                in: {
+                  $add: ["$$value", "$$this.duration"],
+                },
+              },
+            },
+          },
+        },
+      ],
+      (err, data) => {
+        if (err) {
+          res.json(err);
+        } else {
+          res.json(data);
+        }
+      }
+    );
+  });
 
 router.post("/api/workouts", (req, res) => {
   db.create({
@@ -42,14 +52,35 @@ router.put("/api/workouts/:id", (req, res) => {
       if (error) {
         res.json(error);
       } else {
-        db.aggregate([
-          {
-            $addFields: {
-              totalDuration: 0,
+        res.json(success);
+      }
+    }
+  );
+});
+
+router.get("/aggregate", (req, res) => {
+  db.aggregate(
+    [
+      { $match: {} },
+      {
+        $addFields: {
+          totalDuration: {
+            $reduce: {
+              input: "$exercises",
+              initialValue: 0,
+              in: {
+                $add: ["$$value", "$$this.duration"],
+              },
             },
           },
-        ]);
-        res.json(success);
+        },
+      },
+    ],
+    (err, data) => {
+      if (err) {
+        res.json(err);
+      } else {
+        res.json(data);
       }
     }
   );
